@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-ibm-plex-thai);
+  --font-mono: var(--font-jetbrains);
+
+  /* ── Surface ── */
+  --color-surface: #FFFFFF;
+  --color-surface-soft: #F4F8FF;
+  --color-surface-tint: #EAF2FE;
+
+  /* ── Text (ink = back-compat) ── */
+  --color-ink: #0B1F44;
+  --color-ink-muted: #5C6B8A;
+  --color-ink-subtle: #8C99B2;
+
+  /* ── Borders (seam = back-compat) ── */
+  --color-seam: #E1E8F3;
+  --color-seam-strong: #C7D3E8;
+  --color-seam-light: #F4F8FF;
+
+  /* ── Primary blue ── */
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-soft: #DBE7FF;
+
+  /* ── rust → primary (back-compat: old CTA gold → new CTA blue) ── */
+  --color-rust: #2563EB;
+  --color-rust-dark: #1D4ED8;
+  --color-rust-subtle: #DBE7FF;
+
+  /* ── parchment → surface (back-compat: old glass cards → white cards) ── */
+  --color-parchment: #FFFFFF;
+  --color-parchment-dark: #F4F8FF;
+
+  /* ── Accent gold ── */
+  --color-accent: #F59E0B;
+  --color-accent-dark: #D97706;
+  --color-accent-soft: #FEF3C7;
+
+  /* ── Grade level ── */
+  --color-grade1: #EC4899;
+  --color-grade1-soft: #FCE7F3;
+  --color-grade2: #10B981;
+  --color-grade2-soft: #D1FAE5;
+  --color-grade3: #8B5CF6;
+  --color-grade3-soft: #EDE9FE;
+
+  /* ── Semantic ── */
+  --color-success: #10B981;
+  --color-verdant: #10B981;
+  --color-danger: #EF4444;
+  --color-crimson: #EF4444;
+  --color-info: #6366F1;
+
+  /* ── Sidebar dark navy ── */
+  --color-sidebar-bg: #0F1F47;
+  --color-sidebar-text: #E6ECF8;
+  --color-sidebar-muted: #9BA9C8;
+  --color-sidebar-active: #FBBF24;
+}
+
+body {
+  background: linear-gradient(140deg, #EAF2FE 0%, #F4E9FE 45%, #FFF4E0 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #0B1F44;
+}
+
+/* Grade color utilities */
+.grade-m1 { color: #EC4899; }
+.grade-m2 { color: #10B981; }
+.grade-m3 { color: #8B5CF6; }
+.bg-grade-m1 { background-color: #FCE7F3; color: #EC4899; }
+.bg-grade-m2 { background-color: #D1FAE5; color: #10B981; }
+.bg-grade-m3 { background-color: #EDE9FE; color: #8B5CF6; }
+
+/* Press micro-animation for interactive elements */
+.press:active { transform: translateY(1px); }
+
+/* Float animation (login decorative badge) */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float-y 5s ease-in-out infinite; }
+
+/* Dot-burst pattern (hero banner) */
+.dot-burst {
+  background-image: radial-gradient(circle, rgba(255,255,255,.25) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+/* Pastel blob (login background) */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+::selection {
+  background-color: #FBBF24;
+  color: #0B1F44;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #C7D3E8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2563EB; }
