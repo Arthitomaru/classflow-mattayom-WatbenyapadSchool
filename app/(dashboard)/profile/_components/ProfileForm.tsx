@@ -58,7 +58,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
     setSuccess(false)
 
     const supabase = createClient()
-    const updates: Record<string, string | null> = {
+    const updates: Partial<Profile> = {
       full_name: fullName,
       phone: phone || null,
       avatar_url: avatarUrl || null,

@@ -8,7 +8,7 @@ export default function DeleteUserButton({ userId, name }: { userId: string; nam
 
   function handleDelete() {
     if (!confirm(`ลบผู้ใช้ "${name}" ? การกระทำนี้ไม่สามารถย้อนกลับได้`)) return
-    startTransition(() => deleteUser(userId))
+    startTransition(() => { void deleteUser(userId) })
   }
 
   return (

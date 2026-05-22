@@ -85,4 +85,5 @@ export async function deleteUser(userId: string): Promise<{ error?: string }> {
   const { error } = await admin.auth.admin.deleteUser(userId)
   if (error) return { error: error.message }
   revalidatePath('/admin/users')
+  return {}
 }

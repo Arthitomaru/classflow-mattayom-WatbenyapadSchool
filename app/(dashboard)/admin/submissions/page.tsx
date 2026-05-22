@@ -28,7 +28,7 @@ export default async function AdminSubmissionsPage({
     if (!search) return true
     const student = (s.profiles as { full_name: string } | null)?.full_name ?? ''
     const assignment = (s.assignments as { title: string } | null)?.title ?? ''
-    const course = (s.assignments as { courses?: { name: string } | null } | null)?.courses?.name ?? ''
+    const course = (s.assignments as unknown as { courses?: { name: string } | null } | null)?.courses?.name ?? ''
     return (
       student.toLowerCase().includes(search.toLowerCase()) ||
       assignment.toLowerCase().includes(search.toLowerCase()) ||

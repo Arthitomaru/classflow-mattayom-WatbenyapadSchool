@@ -21,7 +21,7 @@ export default async function AdminUsersPage({
   const { data: { users: authUsers } } = await admin.auth.admin.listUsers({ perPage: 1000 })
 
   let query = supabase.from('profiles').select('*').order('created_at', { ascending: false })
-  if (roleFilter && roleFilter !== 'all') query = query.eq('role', roleFilter)
+  if (roleFilter && roleFilter !== 'all') query = query.eq('role', roleFilter as 'teacher' | 'student' | 'admin')
   const { data: profiles } = await query
 
   const emailMap = new Map(authUsers.map(u => [u.id, u.email ?? '']))
