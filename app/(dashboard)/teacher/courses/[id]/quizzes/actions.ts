@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { notifyEnrolledStudents } from '@/lib/notifications'
 
 function revalidate(courseId: string) {
   revalidatePath(`/teacher/courses/${courseId}`)
@@ -21,7 +22,23 @@ export async function createQuiz(courseId: string, data: {
 
 export async function updateQuizStatus(quizId: string, courseId: string, status: string) {
   const supabase = await createClient()
+
+  // Fetch title before update (for notification message)
+  const { data: quiz } = await supabase.from('quizzes').select('title').eq('id', quizId).single()
+
   await supabase.from('quizzes').update({ status: status as 'draft' | 'open' | 'closed' }).eq('id', quizId)
+
+  // Notify enrolled students when quiz opens
+  if (status === 'open' && quiz) {
+    await notifyEnrolledStudents(
+      courseId,
+      'quiz_open',
+      `📋 เปิดทำแบบทดสอบ: ${quiz.title}`,
+      null,
+      `/student/courses/${courseId}`
+    )
+  }
+
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Topic } from '@/types/database'
+import { notifyContentAdded } from '@/app/(dashboard)/notifications/actions'
 
 type ContentType = 'file' | 'youtube' | 'link'
 
@@ -65,6 +66,9 @@ export default function ContentForm({
       setLoading(false)
       return
     }
+
+    // Notify enrolled students (fire-and-forget, ignore errors)
+    notifyContentAdded(courseId, title).catch(() => {})
 
     router.push(`/teacher/courses/${courseId}`)
     router.refresh()

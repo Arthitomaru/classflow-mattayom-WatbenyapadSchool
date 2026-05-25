@@ -5,15 +5,8 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types/database'
 
-const classrooms = [
-  ...Array.from({ length: 10 }, (_, i) => `ม.1/${i + 1}`),
-  ...Array.from({ length: 10 }, (_, i) => `ม.2/${i + 1}`),
-  ...Array.from({ length: 10 }, (_, i) => `ม.3/${i + 1}`),
-]
-
 export default function ProfileForm({ profile }: { profile: Profile }) {
   const [fullName, setFullName] = useState(profile.full_name)
-  const [classroom, setClassroom] = useState(profile.classroom ?? '')
   const [phone, setPhone] = useState(profile.phone ?? '')
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url ?? '')
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url ?? '')
@@ -62,9 +55,6 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
       full_name: fullName,
       phone: phone || null,
       avatar_url: avatarUrl || null,
-    }
-    if (profile.role === 'student') {
-      updates.classroom = classroom || null
     }
 
     const { error: updateError } = await supabase
@@ -134,23 +124,6 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
           className="w-full bg-parchment-dark border border-seam px-4 py-3 text-base text-ink placeholder-ink-muted focus:outline-none focus:border-rust focus:ring-1 focus:ring-rust transition-colors"
         />
       </div>
-
-      {/* Classroom — students only */}
-      {profile.role === 'student' && (
-        <div>
-          <label className="block text-sm font-semibold text-ink-muted mb-2">ห้องเรียน</label>
-          <select
-            value={classroom}
-            onChange={e => setClassroom(e.target.value)}
-            className="w-full bg-parchment-dark border border-seam px-4 py-3 text-base text-ink focus:outline-none focus:border-rust focus:ring-1 focus:ring-rust transition-colors"
-          >
-            <option value="">— เลือกห้องเรียน —</option>
-            {classrooms.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {/* Phone */}
       <div>

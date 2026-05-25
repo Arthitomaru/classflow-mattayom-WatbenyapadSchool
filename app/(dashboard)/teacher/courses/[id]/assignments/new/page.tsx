@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { notifyAssignmentCreated } from '@/app/(dashboard)/notifications/actions'
 export default function NewCourseAssignment() {
   const params = useParams()
   const courseId = params.id as string
@@ -36,6 +37,9 @@ export default function NewCourseAssignment() {
       setLoading(false)
       return
     }
+
+    // Notify enrolled students (fire-and-forget)
+    notifyAssignmentCreated(courseId, title).catch(() => {})
 
     router.push(`/teacher/courses/${courseId}`)
     router.refresh()

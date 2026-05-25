@@ -66,7 +66,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
-  const [role, setRole]         = useState<'student' | 'teacher'>('student')
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -109,7 +108,7 @@ export default function LoginPage() {
           </div>
           <div>
             <p className="font-display font-semibold text-[17px] text-ink">Classflow</p>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-ink-subtle">for mattayom</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-ink-subtle">for mathayom</p>
           </div>
         </div>
 
@@ -177,26 +176,6 @@ export default function LoginPage() {
             สวัสดี ยินดีต้อนรับกลับ
           </h2>
 
-          {/* Role tab (cosmetic — auth determines role from DB) */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl mb-5"
-            style={{ background: '#EAF2FE' }}>
-            {(['student', 'teacher'] as const).map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRole(r)}
-                className="rounded-xl py-2.5 text-[13px] font-medium transition-all"
-                style={
-                  role === r
-                    ? { background: '#FFFFFF', color: '#0B1F44', boxShadow: '0 1px 3px rgba(11,31,68,.08)' }
-                    : { background: 'transparent', color: '#5C6B8A' }
-                }
-              >
-                {r === 'student' ? 'นักเรียน' : 'ครู / ผู้ดูแล'}
-              </button>
-            ))}
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-[11px] tracking-[0.18em] uppercase text-ink-subtle mb-1.5">
@@ -226,14 +205,11 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between text-[12px] pt-1">
+            <div className="flex items-center text-[12px] pt-1">
               <label className="flex items-center gap-2 text-ink-muted cursor-pointer select-none">
                 <input type="checkbox" defaultChecked className="rounded accent-primary" />
                 จำฉันไว้
               </label>
-              <Link href="/forgot-password" className="text-primary hover:underline">
-                ลืมรหัสผ่าน?
-              </Link>
             </div>
 
             {error && (

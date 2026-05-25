@@ -136,6 +136,19 @@ export interface QuizAnswer {
   quiz_questions?: QuizQuestion
 }
 
+export type NotificationType = 'assignment_created' | 'content_added' | 'quiz_open'
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  body: string | null
+  link: string | null
+  is_read: boolean
+  created_at: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -395,6 +408,12 @@ export type Database = {
           { foreignKeyName: "quiz_answers_chosen_choice_id_fkey"; columns: ["chosen_choice_id"]; isOneToOne: false; referencedRelation: "quiz_choices"; referencedColumns: ["id"] },
           { foreignKeyName: "quiz_answers_question_id_fkey"; columns: ["question_id"]; isOneToOne: false; referencedRelation: "quiz_questions"; referencedColumns: ["id"] }
         ]
+      }
+      notifications: {
+        Row: { id: string; user_id: string; type: 'assignment_created' | 'content_added' | 'quiz_open'; title: string; body: string | null; link: string | null; is_read: boolean; created_at: string }
+        Insert: { id?: string; user_id: string; type: 'assignment_created' | 'content_added' | 'quiz_open'; title: string; body?: string | null; link?: string | null; is_read?: boolean; created_at?: string | null }
+        Update: { id?: string; user_id?: string; type?: 'assignment_created' | 'content_added' | 'quiz_open'; title?: string; body?: string | null; link?: string | null; is_read?: boolean; created_at?: string | null }
+        Relationships: [{ foreignKeyName: "notifications_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }]
       }
     }
     Views: {

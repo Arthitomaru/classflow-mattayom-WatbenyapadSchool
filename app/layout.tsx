@@ -22,7 +22,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Classflow for Mattayom",
+  title: "Classflow for Mathayom",
   description: "ระบบจัดการการเรียน ส่งงาน และข้อสอบสำหรับมัธยมศึกษา",
 };
 

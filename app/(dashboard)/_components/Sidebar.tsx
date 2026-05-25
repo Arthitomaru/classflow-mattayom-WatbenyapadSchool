@@ -129,6 +129,8 @@ export default function Sidebar({ profile }: { profile: Profile }) {
   const roleLabel = profile.role === 'teacher' ? 'ครู' : profile.role === 'admin' ? 'ผู้ดูแล' : 'นักเรียน'
   const initial = profile.full_name.charAt(0).toUpperCase()
 
+  const [notifCount, setNotifCount] = useState(0)
+
   useEffect(() => {
     const supabase = createClient()
     if (profile.role === 'teacher') {
@@ -147,6 +149,16 @@ export default function Sidebar({ profile }: { profile: Profile }) {
         .then(({ count }) => setBadgeCount(count ?? 0))
     }
   }, [profile.id, profile.role])
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', profile.id)
+      .eq('is_read', false)
+      .then(({ count }) => setNotifCount(count ?? 0))
+  }, [profile.id])
 
   async function handleLogout() {
     const supabase = createClient()
@@ -176,7 +188,7 @@ export default function Sidebar({ profile }: { profile: Profile }) {
             Classflow
           </p>
           <p className="text-[10px] tracking-[0.25em] uppercase mt-1" style={{ color: '#9BA9C8' }}>
-            for mattayom
+            for mathayom
           </p>
         </div>
       </div>
@@ -245,12 +257,20 @@ export default function Sidebar({ profile }: { profile: Profile }) {
         <ul className="space-y-0.5">
           <li>
             <Link
-              href="/profile"
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-colors hover:bg-white/5"
+              href="/notifications"
+              className="relative flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-colors hover:bg-white/5"
               style={{ color: '#9BA9C8' }}
             >
               <IconBell className="w-4 h-4" />
               การแจ้งเตือน
+              {notifCount > 0 && (
+                <span
+                  className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                  style={{ background: '#EF4444', color: '#fff' }}
+                >
+                  {notifCount > 99 ? '99+' : notifCount}
+                </span>
+              )}
             </Link>
           </li>
           <li>
