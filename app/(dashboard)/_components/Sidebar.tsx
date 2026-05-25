@@ -88,6 +88,15 @@ function IconLogout({ className }: { className?: string }) {
   )
 }
 
+function IconX({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
 // ── Nav config ────────────────────────────────────────────────
 
 type NavItem = {
@@ -120,7 +129,7 @@ const adminNav: NavItem[] = [
 
 // ── Component ─────────────────────────────────────────────────
 
-export default function Sidebar({ profile }: { profile: Profile }) {
+export default function Sidebar({ profile, onMobileClose }: { profile: Profile; onMobileClose?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
   const [badgeCount, setBadgeCount] = useState(0)
@@ -183,7 +192,7 @@ export default function Sidebar({ profile }: { profile: Profile }) {
             className="w-full h-full object-contain"
           />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-display font-semibold text-[18px] leading-none" style={{ color: '#FBBF24' }}>
             Classflow
           </p>
@@ -191,6 +200,17 @@ export default function Sidebar({ profile }: { profile: Profile }) {
             for mathayom
           </p>
         </div>
+        {/* Close button — mobile only */}
+        {onMobileClose && (
+          <button
+            onClick={onMobileClose}
+            className="md:hidden p-1.5 rounded-lg transition-opacity opacity-60 hover:opacity-100 flex-shrink-0"
+            style={{ color: '#E6ECF8' }}
+            aria-label="ปิดเมนู"
+          >
+            <IconX className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* ── Role badge ── */}

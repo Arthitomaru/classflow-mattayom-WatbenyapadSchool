@@ -98,9 +98,9 @@ export default async function CourseDetail({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Assignments (left 2/3) */}
-        <div className="col-span-2">
+        <div className="col-span-1 md:col-span-2">
           <div className="border border-seam">
             <div className="flex items-center justify-between px-5 py-4 border-b border-seam bg-parchment-dark">
               <h2 className="font-display text-lg text-ink">งานที่มอบหมาย</h2>

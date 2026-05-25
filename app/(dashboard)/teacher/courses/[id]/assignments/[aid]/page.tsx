@@ -142,7 +142,8 @@ export default async function CourseAssignmentDetail({
           </div>
         ) : (
           <div>
-            <div className="grid grid-cols-12 px-6 py-3 bg-parchment-dark/50 border-b border-seam/50">
+            {/* Desktop header row */}
+            <div className="hidden md:grid grid-cols-12 px-6 py-3 bg-parchment-dark/50 border-b border-seam/50">
               <p className="col-span-4 text-xs tracking-widest uppercase text-ink-muted">ชื่อนักเรียน</p>
               <p className="col-span-3 text-xs tracking-widest uppercase text-ink-muted">ส่งเมื่อ</p>
               <p className="col-span-2 text-xs tracking-widest uppercase text-ink-muted">สถานะ</p>
@@ -153,31 +154,57 @@ export default async function CourseAssignmentDetail({
             {submissions.map((sub, i) => {
               const isLate = assignment.due_date && new Date(sub.submitted_at) > new Date(assignment.due_date)
               return (
-                <div key={sub.id} className={`grid grid-cols-12 px-6 py-4 items-center ${i < submissions.length - 1 ? 'border-b border-seam' : ''}`}>
-                  <span className="col-span-4 text-ink text-sm font-medium">
-                    {sub.profiles?.full_name ?? 'ไม่ระบุ'}
-                  </span>
-                  <div className="col-span-3">
-                    <p className="text-ink-muted text-xs">{formatDateTime(sub.submitted_at)}</p>
-                    {isLate && (
-                      <span className="text-xs text-crimson font-medium">ส่งล่าช้า</span>
-                    )}
-                  </div>
-                  <span className="col-span-2">
-                    <span className={`text-xs px-2 py-0.5 border ${
-                      sub.status === 'graded'
-                        ? 'text-verdant border-verdant/30 bg-verdant/5'
-                        : 'text-rust border-rust/30 bg-rust-subtle'
-                    }`}>
-                      {sub.status === 'graded' ? 'ตรวจแล้ว' : 'รอตรวจ'}
+                <div key={sub.id} className={`${i < submissions.length - 1 ? 'border-b border-seam' : ''}`}>
+                  {/* Desktop row */}
+                  <div className="hidden md:grid grid-cols-12 px-6 py-4 items-center">
+                    <span className="col-span-4 text-ink text-sm font-medium">
+                      {sub.profiles?.full_name ?? 'ไม่ระบุ'}
                     </span>
-                  </span>
-                  <span className="col-span-1 text-ink text-sm font-semibold">
-                    {sub.grade !== null ? `${sub.grade}` : '—'}
-                  </span>
-                  <span className="col-span-2">
-                    <GradePanel submission={sub} />
-                  </span>
+                    <div className="col-span-3">
+                      <p className="text-ink-muted text-xs">{formatDateTime(sub.submitted_at)}</p>
+                      {isLate && <span className="text-xs text-crimson font-medium">ส่งล่าช้า</span>}
+                    </div>
+                    <span className="col-span-2">
+                      <span className={`text-xs px-2 py-0.5 border ${
+                        sub.status === 'graded'
+                          ? 'text-verdant border-verdant/30 bg-verdant/5'
+                          : 'text-rust border-rust/30 bg-rust-subtle'
+                      }`}>
+                        {sub.status === 'graded' ? 'ตรวจแล้ว' : 'รอตรวจ'}
+                      </span>
+                    </span>
+                    <span className="col-span-1 text-ink text-sm font-semibold">
+                      {sub.grade !== null ? `${sub.grade}` : '—'}
+                    </span>
+                    <span className="col-span-2">
+                      <GradePanel submission={sub} />
+                    </span>
+                  </div>
+                  {/* Mobile card */}
+                  <div className="md:hidden px-4 py-4 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-ink text-sm font-medium">{sub.profiles?.full_name ?? 'ไม่ระบุ'}</span>
+                      <span className={`text-xs px-2 py-0.5 border ${
+                        sub.status === 'graded'
+                          ? 'text-verdant border-verdant/30 bg-verdant/5'
+                          : 'text-rust border-rust/30 bg-rust-subtle'
+                      }`}>
+                        {sub.status === 'graded' ? 'ตรวจแล้ว' : 'รอตรวจ'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-ink-muted text-xs">{formatDateTime(sub.submitted_at)}</p>
+                        {isLate && <span className="text-xs text-crimson font-medium">ส่งล่าช้า</span>}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {sub.grade !== null && (
+                          <span className="text-ink text-sm font-semibold">{sub.grade} คะแนน</span>
+                        )}
+                        <GradePanel submission={sub} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )
             })}
