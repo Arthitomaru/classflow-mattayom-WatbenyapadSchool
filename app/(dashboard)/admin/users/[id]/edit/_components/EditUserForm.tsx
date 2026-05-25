@@ -4,11 +4,6 @@ import { useState, useTransition } from 'react'
 import { updateUser } from '../../../../actions'
 import type { Profile, Role, Grade } from '@/types/database'
 
-const classrooms = [
-  ...Array.from({ length: 10 }, (_, i) => `ม.1/${i + 1}`),
-  ...Array.from({ length: 10 }, (_, i) => `ม.2/${i + 1}`),
-  ...Array.from({ length: 10 }, (_, i) => `ม.3/${i + 1}`),
-]
 
 export default function EditUserForm({ profile }: { profile: Profile }) {
   const [role, setRole] = useState<Role>(profile.role)
@@ -54,26 +49,16 @@ export default function EditUserForm({ profile }: { profile: Profile }) {
       </div>
 
       {role === 'student' && (
-        <>
-          <div>
-            <label className="block text-sm font-semibold text-ink-muted mb-2">ชั้น</label>
-            <select name="grade" defaultValue={profile.grade ?? ''}
-              className="w-full bg-parchment-dark border border-seam px-4 py-3 text-base text-ink focus:outline-none focus:border-rust">
-              <option value="">— เลือก —</option>
-              {(['ม.1', 'ม.2', 'ม.3'] as Grade[]).map(g => (
-                <option key={g} value={g}>{g}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-ink-muted mb-2">ห้องเรียน</label>
-            <select name="classroom" defaultValue={profile.classroom ?? ''}
-              className="w-full bg-parchment-dark border border-seam px-4 py-3 text-base text-ink focus:outline-none focus:border-rust">
-              <option value="">— เลือก —</option>
-              {classrooms.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-        </>
+        <div>
+          <label className="block text-sm font-semibold text-ink-muted mb-2">ชั้น</label>
+          <select name="grade" defaultValue={profile.grade ?? ''}
+            className="w-full bg-parchment-dark border border-seam px-4 py-3 text-base text-ink focus:outline-none focus:border-rust">
+            <option value="">— เลือก —</option>
+            {(['ม.1', 'ม.2', 'ม.3'] as Grade[]).map(g => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+        </div>
       )}
 
       <div>
