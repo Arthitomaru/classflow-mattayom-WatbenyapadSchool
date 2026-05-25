@@ -30,17 +30,21 @@ export async function createUser(data: {
     email: data.email,
     password: data.password,
     email_confirm: true,
+    user_metadata: {
+      full_name: data.full_name,
+      role: data.role,
+    },
   })
   if (error || !authData.user) return { error: error?.message ?? 'สร้าง user ไม่สำเร็จ' }
 
-  const { error: profileError } = await admin.from('profiles').insert({
+  const { error: profileError } = await admin.from('profiles').upsert({
     id: authData.user.id,
     full_name: data.full_name,
     role: data.role,
     grade: data.grade,
     classroom: data.classroom,
     phone: data.phone,
-  })
+  }, { onConflict: 'id' })
 
   if (profileError) {
     await admin.auth.admin.deleteUser(authData.user.id)
