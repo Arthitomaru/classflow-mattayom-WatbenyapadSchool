@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { formatDate } from '@/lib/utils'
 import AddStudentForm from '@/app/(dashboard)/teacher/courses/_components/AddStudentForm'
 import AddTopicForm from '@/app/(dashboard)/teacher/courses/_components/AddTopicForm'
@@ -19,26 +20,28 @@ export default async function CourseDetail({ params }: { params: Promise<{ id: s
   if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/student')
 
   const isAdmin = profile?.role === 'admin'
+  const db = isAdmin ? createAdminClient() : supabase
+
   const { data: course } = await (isAdmin
-    ? supabase.from('courses').select('*').eq('id', id).single()
-    : supabase.from('courses').select('*').eq('id', id).eq('teacher_id', user.id).single()
+    ? db.from('courses').select('*').eq('id', id).single()
+    : db.from('courses').select('*').eq('id', id).eq('teacher_id', user.id).single()
   )
   if (!course) notFound()
 
   const [assignmentsRes, enrollmentsRes, topicsRes, quizzesRes] = await Promise.all([
-    supabase.from('assignments')
+    db.from('assignments')
       .select('*, submissions(count)')
       .eq('course_id', id)
       .order('created_at', { ascending: false }),
-    supabase.from('enrollments')
+    db.from('enrollments')
       .select('*, profiles(full_name, grade, classroom, avatar_url)')
       .eq('course_id', id)
       .order('created_at', { ascending: true }),
-    supabase.from('topics')
+    db.from('topics')
       .select('*, content_items(*)')
       .eq('course_id', id)
       .order('created_at', { ascending: true }),
-    supabase.from('quizzes')
+    db.from('quizzes')
       .select('id, title, status, quiz_questions(count)')
       .eq('course_id', id)
       .order('created_at', { ascending: false }),
@@ -52,7 +55,7 @@ export default async function CourseDetail({ params }: { params: Promise<{ id: s
   const assignmentIds = assignments.map(a => a.id)
   let pendingGrading = 0
   if (assignmentIds.length > 0) {
-    const { count } = await supabase
+    const { count } = await db
       .from('submissions')
       .select('id', { count: 'exact', head: true })
       .in('assignment_id', assignmentIds)
