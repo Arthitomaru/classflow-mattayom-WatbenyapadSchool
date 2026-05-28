@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export default async function QuizResultsPage({
   params,
@@ -14,29 +15,31 @@ export default async function QuizResultsPage({
   if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/student')
 
   const isAdmin = profile?.role === 'admin'
+  const db = isAdmin ? createAdminClient() : supabase
+
   const { data: course } = await (isAdmin
-    ? supabase.from('courses').select('id, name').eq('id', id).single()
-    : supabase.from('courses').select('id, name').eq('id', id).eq('teacher_id', user.id).single()
+    ? db.from('courses').select('id, name').eq('id', id).single()
+    : db.from('courses').select('id, name').eq('id', id).eq('teacher_id', user.id).single()
   )
   if (!course) notFound()
 
-  const { data: quiz } = await supabase
+  const { data: quiz } = await db
     .from('quizzes').select('*').eq('id', qid).single()
   if (!quiz) notFound()
 
-  const { data: questions } = await supabase
+  const { data: questions } = await db
     .from('quiz_questions')
     .select('*, quiz_choices(*)')
     .eq('quiz_id', qid)
     .order('created_at', { ascending: true })
 
-  const { data: attempts } = await supabase
+  const { data: attempts } = await db
     .from('quiz_attempts')
     .select('*, profiles(full_name, classroom)')
     .eq('quiz_id', qid)
     .order('score', { ascending: false })
 
-  const { data: allAnswers } = await supabase
+  const { data: allAnswers } = await db
     .from('quiz_answers')
     .select('*, quiz_choices(choice_text, is_correct), quiz_questions(question_text)')
     .in('attempt_id', (attempts ?? []).map(a => a.id))

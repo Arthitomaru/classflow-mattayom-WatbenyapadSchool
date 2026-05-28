@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import GradePanel from '@/app/(dashboard)/_components/GradePanel'
 
@@ -19,19 +20,21 @@ export default async function CourseAssignmentDetail({
   if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/student')
 
   const isAdmin = profile?.role === 'admin'
+  const db = isAdmin ? createAdminClient() : supabase
+
   const { data: assignment } = await (isAdmin
-    ? supabase.from('assignments').select('*').eq('id', aid).single()
-    : supabase.from('assignments').select('*').eq('id', aid).eq('teacher_id', user.id).single()
+    ? db.from('assignments').select('*').eq('id', aid).single()
+    : db.from('assignments').select('*').eq('id', aid).eq('teacher_id', user.id).single()
   )
   if (!assignment) notFound()
 
   const [submissionsRes, enrollmentsRes] = await Promise.all([
-    supabase
+    db
       .from('submissions')
       .select('*, profiles(full_name)')
       .eq('assignment_id', aid)
       .order('submitted_at', { ascending: false }),
-    supabase
+    db
       .from('enrollments')
       .select('student_id, profiles(full_name, grade, classroom)')
       .eq('course_id', courseId),

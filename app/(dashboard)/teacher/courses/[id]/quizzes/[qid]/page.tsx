@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { QuizQuestion, QuizChoice } from '@/types/database'
 import QuizStatusControl from '../_components/QuizStatusControl'
 import AddQuestionForm from '../_components/AddQuestionForm'
@@ -19,23 +20,25 @@ export default async function QuizDetailPage({
   if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/student')
 
   const isAdmin = profile?.role === 'admin'
+  const db = isAdmin ? createAdminClient() : supabase
+
   const { data: course } = await (isAdmin
-    ? supabase.from('courses').select('id, name').eq('id', id).single()
-    : supabase.from('courses').select('id, name').eq('id', id).eq('teacher_id', user.id).single()
+    ? db.from('courses').select('id, name').eq('id', id).single()
+    : db.from('courses').select('id, name').eq('id', id).eq('teacher_id', user.id).single()
   )
   if (!course) notFound()
 
-  const { data: quiz } = await supabase
+  const { data: quiz } = await db
     .from('quizzes').select('*').eq('id', qid).eq('course_id', id).single()
   if (!quiz) notFound()
 
-  const { data: questions } = await supabase
+  const { data: questions } = await db
     .from('quiz_questions')
     .select('*, quiz_choices(*)')
     .eq('quiz_id', qid)
     .order('created_at', { ascending: true })
 
-  const { count: attemptCount } = await supabase
+  const { count: attemptCount } = await db
     .from('quiz_attempts')
     .select('id', { count: 'exact', head: true })
     .eq('quiz_id', qid)
