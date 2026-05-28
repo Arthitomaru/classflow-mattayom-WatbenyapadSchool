@@ -34,6 +34,31 @@ export async function createAssignment(data: {
   return {}
 }
 
+export async function updateAssignment(
+  assignmentId: string,
+  courseId: string,
+  data: { title: string; description: string | null; due_date: string | null }
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'teacher' && profile?.role !== 'admin') return { error: 'ไม่มีสิทธิ์' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('assignments').update({
+    title: data.title,
+    description: data.description,
+    due_date: data.due_date || null,
+  }).eq('id', assignmentId)
+
+  if (error) return { error: error.message }
+  revalidatePath(`/teacher/courses/${courseId}/assignments/${assignmentId}`)
+  revalidatePath(`/teacher/courses/${courseId}`)
+  return {}
+}
+
 export async function deleteAssignment(assignmentId: string, courseId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

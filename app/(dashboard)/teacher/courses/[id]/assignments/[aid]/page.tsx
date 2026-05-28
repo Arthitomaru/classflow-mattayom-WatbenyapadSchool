@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import GradePanel from '@/app/(dashboard)/_components/GradePanel'
+import EditAssignmentForm from '../_components/EditAssignmentForm'
 
 export default async function CourseAssignmentDetail({
   params,
@@ -71,12 +72,21 @@ export default async function CourseAssignmentDetail({
               <p className="text-ink-muted text-sm leading-relaxed max-w-xl">{assignment.description}</p>
             )}
           </div>
-          <div className="text-right flex-shrink-0 ml-8">
-            {assignment.due_date && (
+          <div className="text-right flex-shrink-0 ml-8 flex flex-col items-end gap-2">
+            <EditAssignmentForm
+              assignmentId={aid}
+              courseId={courseId}
+              title={assignment.title}
+              description={assignment.description}
+              dueDate={assignment.due_date}
+            />
+            {assignment.due_date ? (
               <div>
                 <p className="text-xs tracking-widest uppercase text-ink-muted mb-1">วันส่ง</p>
                 <p className="text-ink text-sm">{formatDate(assignment.due_date)}</p>
               </div>
+            ) : (
+              <p className="text-xs text-ink-muted">ไม่กำหนดวันส่ง</p>
             )}
           </div>
         </div>
