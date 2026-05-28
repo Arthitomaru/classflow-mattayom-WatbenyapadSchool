@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { notifyAssignmentCreated } from '@/app/(dashboard)/notifications/actions'
+import { createAssignment } from '../actions'
+
 export default function NewCourseAssignment() {
   const params = useParams()
   const courseId = params.id as string
@@ -12,6 +13,7 @@ export default function NewCourseAssignment() {
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [error, setError] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -19,29 +21,29 @@ export default function NewCourseAssignment() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    setSuccessMsg('')
 
-    const { error: err } = await supabase.from('assignments').insert({
+    const savedTitle = title
+    const { error: err } = await createAssignment({
       title,
       description: description || null,
       due_date: dueDate || null,
-      grade: null,
-      teacher_id: user.id,
       course_id: courseId,
     })
 
     if (err) {
-      setError(err.message)
+      setError(err)
       setLoading(false)
       return
     }
 
-    // Notify enrolled students (fire-and-forget)
-    notifyAssignmentCreated(courseId, title).catch(() => {})
+    notifyAssignmentCreated(courseId, savedTitle).catch(() => {})
 
-    router.push(`/teacher/courses/${courseId}`)
+    setTitle('')
+    setDescription('')
+    setDueDate('')
+    setSuccessMsg(`สร้างงาน "${savedTitle}" แล้ว`)
+    setLoading(false)
     router.refresh()
   }
 
@@ -58,6 +60,12 @@ export default function NewCourseAssignment() {
         <p className="text-rust text-xs tracking-[0.25em] uppercase mb-1">สร้างใหม่</p>
         <h1 className="font-display text-4xl text-ink">มอบหมายงาน</h1>
       </div>
+
+      {successMsg && (
+        <div className="mb-6 px-4 py-3 border border-verdant/30 bg-verdant/5 text-verdant text-sm">
+          {successMsg}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -115,7 +123,7 @@ export default function NewCourseAssignment() {
           </button>
           <Link href={`/teacher/courses/${courseId}`}
             className="px-8 py-3 text-base border border-seam text-ink-muted hover:border-ink hover:text-ink transition-colors">
-            ยกเลิก
+            กลับ
           </Link>
         </div>
       </form>

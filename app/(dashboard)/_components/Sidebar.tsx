@@ -122,7 +122,7 @@ const studentNav: NavItem[] = [
 const adminNav: NavItem[] = [
   { href: '/admin', label: 'แดชบอร์ด', Icon: IconHome, exact: true },
   { href: '/admin/users', label: 'จัดการผู้ใช้', Icon: IconUsers },
-  { href: '/admin/courses', label: 'จัดการวิชา', Icon: IconBook },
+  { href: '/teacher/courses', label: 'จัดการวิชา', Icon: IconBook },
   { href: '/admin/submissions', label: 'งานที่ส่ง', Icon: IconPaper },
   { href: '/admin/quizzes', label: 'ข้อสอบ', Icon: IconQuiz },
 ]

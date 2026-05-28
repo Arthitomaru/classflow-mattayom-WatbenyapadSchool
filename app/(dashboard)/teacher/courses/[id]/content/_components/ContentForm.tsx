@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Topic } from '@/types/database'
 import { notifyContentAdded } from '@/app/(dashboard)/notifications/actions'
+import { addContentItem } from '../actions'
 
 type ContentType = 'file' | 'youtube' | 'link'
 
@@ -23,14 +24,17 @@ export default function ContentForm({
   const [description, setDescription] = useState('')
   const [url, setUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [fileKey, setFileKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccessMsg('')
     const supabase = createClient()
 
     let filePath: string | null = null
@@ -51,31 +55,43 @@ export default function ContentForm({
       itemUrl = url
     }
 
-    const { error: insertErr } = await supabase.from('content_items').insert({
+    const savedTitle = title
+    const { error: insertErr } = await addContentItem({
       topic_id: topicId,
       title,
       description: description || null,
       type,
       url: itemUrl,
       file_path: filePath,
-      item_order: 0,
+      courseId,
     })
 
     if (insertErr) {
-      setError('บันทึกไม่สำเร็จ: ' + insertErr.message)
+      setError('บันทึกไม่สำเร็จ: ' + insertErr)
       setLoading(false)
       return
     }
 
-    // Notify enrolled students (fire-and-forget, ignore errors)
-    notifyContentAdded(courseId, title).catch(() => {})
+    notifyContentAdded(courseId, savedTitle).catch(() => {})
 
-    router.push(`/teacher/courses/${courseId}`)
+    setTitle('')
+    setDescription('')
+    setUrl('')
+    setFile(null)
+    setFileKey(k => k + 1)
+    setSuccessMsg(`เพิ่ม "${savedTitle}" แล้ว`)
+    setLoading(false)
     router.refresh()
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {successMsg && (
+        <div className="px-4 py-3 border border-verdant/30 bg-verdant/5 text-verdant text-sm">
+          {successMsg}
+        </div>
+      )}
+
       {/* Topic */}
       <div>
         <label className="block text-sm font-semibold text-ink-muted mb-2">หัวข้อ</label>
@@ -138,9 +154,10 @@ export default function ContentForm({
 
       {/* Content input */}
       {type === 'file' ? (
-        <div key="file-input">
+        <div key={`file-${fileKey}`}>
           <label className="block text-sm font-semibold text-ink-muted mb-2">ไฟล์ (PDF, Word, PPT, รูปภาพ)</label>
           <input
+            key={fileKey}
             type="file"
             accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png"
             onChange={e => setFile(e.target.files?.[0] ?? null)}
@@ -178,10 +195,10 @@ export default function ContentForm({
         </button>
         <button
           type="button"
-          onClick={() => router.push(`/teacher/courses/${courseId}`)}
+          onClick={() => router.back()}
           className="px-6 py-4 border border-seam text-ink-muted text-sm hover:text-rust hover:border-rust transition-colors"
         >
-          ยกเลิก
+          กลับ
         </button>
       </div>
     </form>

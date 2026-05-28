@@ -63,9 +63,9 @@ export default async function CourseDetail({ params }: { params: Promise<{ id: s
   return (
     <div className="p-6 md:p-10 max-w-5xl">
       <div className="mb-6">
-        <Link href="/teacher/courses"
+        <Link href={isAdmin ? '/admin/courses' : '/teacher/courses'}
           className="text-ink-muted text-sm hover:text-rust transition-colors">
-          ← วิชาของฉัน
+          {isAdmin ? '← จัดการวิชา' : '← วิชาของฉัน'}
         </Link>
       </div>
 

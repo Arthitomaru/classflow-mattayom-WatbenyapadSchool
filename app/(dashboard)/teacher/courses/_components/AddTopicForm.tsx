@@ -1,22 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { addTopic } from '../actions'
 
 export default function AddTopicForm({ courseId }: { courseId: string }) {
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!title.trim()) return
     setLoading(true)
-    const supabase = createClient()
-    await supabase.from('topics').insert({ course_id: courseId, title, topic_order: 0 })
+    await addTopic(courseId, title.trim())
     setTitle('')
     setLoading(false)
-    router.refresh()
   }
 
   return (

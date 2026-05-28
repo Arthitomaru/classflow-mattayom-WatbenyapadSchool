@@ -1,55 +1,27 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { addEnrollment } from '../actions'
 
 export default function AddStudentForm({ courseId }: { courseId: string }) {
   const [username, setUsername] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
     setSuccess('')
-    const supabase = createClient()
-
-    const { data: student } = await supabase
-      .from('profiles')
-      .select('id, full_name, role')
-      .eq('full_name', username.trim())
-      .eq('role', 'student')
-      .single()
-
-    if (!student) {
-      setError('ไม่พบนักเรียนชื่อนี้ในระบบ')
-      setLoading(false)
-      return
+    const result = await addEnrollment(courseId, username)
+    if (result.error) {
+      setError(result.error)
+    } else {
+      setSuccess(`เพิ่ม ${result.fullName} แล้ว`)
+      setUsername('')
     }
-
-    const { error: err } = await supabase.from('enrollments').insert({
-      course_id: courseId,
-      student_id: student.id,
-    })
-
-    if (err) {
-      if (err.code === '23505') {
-        setError('นักเรียนคนนี้ลงทะเบียนวิชานี้แล้ว')
-      } else {
-        setError(err.message)
-      }
-      setLoading(false)
-      return
-    }
-
-    setSuccess(`เพิ่ม ${student.full_name} แล้ว`)
-    setUsername('')
     setLoading(false)
-    router.refresh()
   }
 
   return (

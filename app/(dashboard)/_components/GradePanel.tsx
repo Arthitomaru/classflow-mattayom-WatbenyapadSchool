@@ -47,24 +47,40 @@ export default function GradePanel({ submission }: Props) {
     setFeedback(prev => prev ? `${prev}\n${comment}` : comment)
   }
 
-  async function handleDownload() {
-    if (!submission.file_url || !submission.file_name) return
+  function parseFiles(): { url: string; name: string }[] {
+    const { file_url, file_name } = submission
+    if (!file_url || !file_name) return []
     try {
-      const res = await fetch(submission.file_url)
+      const urls = JSON.parse(file_url)
+      const names = JSON.parse(file_name)
+      if (Array.isArray(urls) && Array.isArray(names)) {
+        return urls.map((url: string, i: number) => ({ url, name: names[i] ?? url }))
+      }
+    } catch {
+      return [{ url: file_url, name: file_name }]
+    }
+    return []
+  }
+
+  async function handleDownload(url: string, name: string) {
+    try {
+      const res = await fetch(url)
       if (!res.ok) throw new Error('fetch failed')
       const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
+      const objectUrl = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
-      a.download = submission.file_name
+      a.href = objectUrl
+      a.download = name
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      setTimeout(() => URL.revokeObjectURL(url), 30000)
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 30000)
     } catch {
-      window.open(submission.file_url, '_blank')
+      window.open(url, '_blank')
     }
   }
+
+  const attachedFiles = parseFiles()
 
   async function handleSave() {
     setSaving(true)
@@ -141,19 +157,24 @@ export default function GradePanel({ submission }: Props) {
                   </div>
                 ) : null}
 
-                {submission.file_name ? (
+                {attachedFiles.length > 0 ? (
                   <div>
-                    <p className="text-[11px] tracking-widest uppercase text-ink-subtle mb-2">ไฟล์แนบ</p>
-                    <button
-                      onClick={handleDownload}
-                      className="text-[12px] font-mono px-3 py-2 rounded-xl border border-seam bg-surface-soft hover:bg-surface-tint transition-colors text-left text-primary"
-                    >
-                      📎 {submission.file_name} · คลิกดาวน์โหลด
-                    </button>
+                    <p className="text-[11px] tracking-widest uppercase text-ink-subtle mb-2">ไฟล์แนบ ({attachedFiles.length})</p>
+                    <div className="space-y-1.5">
+                      {attachedFiles.map((f, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleDownload(f.url, f.name)}
+                          className="w-full text-[12px] font-mono px-3 py-2 rounded-xl border border-seam bg-surface-soft hover:bg-surface-tint transition-colors text-left text-primary"
+                        >
+                          📎 {f.name} · คลิกดาวน์โหลด
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
 
-                {!submission.text_content && !submission.file_name && (
+                {!submission.text_content && attachedFiles.length === 0 && (
                   <p className="text-[13px] text-ink-muted py-4">ไม่มีเนื้อหาที่ส่ง</p>
                 )}
               </div>

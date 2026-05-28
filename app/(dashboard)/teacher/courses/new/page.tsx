@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { createCourse } from '../actions'
 
 export default function NewCourse() {
   const [code, setCode] = useState('')
@@ -11,31 +10,20 @@ export default function NewCourse() {
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
-
-    const { error: err } = await supabase.from('courses').insert({
+    const { error: err } = await createCourse({
       code: code.trim().toUpperCase(),
       name: name.trim(),
       description: description.trim() || null,
-      teacher_id: user.id,
     })
-
     if (err) {
-      setError(err.message)
+      setError(err)
       setLoading(false)
-      return
     }
-
-    router.push('/teacher/courses')
-    router.refresh()
   }
 
   return (
@@ -43,7 +31,7 @@ export default function NewCourse() {
       <div className="mb-8">
         <Link href="/teacher/courses"
           className="text-ink-muted text-sm hover:text-rust transition-colors">
-          ← วิชาของฉัน
+          ← กลับ
         </Link>
       </div>
 

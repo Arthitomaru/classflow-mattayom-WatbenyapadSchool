@@ -7,6 +7,20 @@ import { createClient } from '@/lib/supabase/client'
 import { formatDate, gradeToLetter } from '@/lib/utils'
 import type { Assignment, Submission } from '@/types/database'
 
+function parseFiles(file_url: string | null, file_name: string | null): { url: string; name: string }[] {
+  if (!file_url || !file_name) return []
+  try {
+    const urls = JSON.parse(file_url)
+    const names = JSON.parse(file_name)
+    if (Array.isArray(urls) && Array.isArray(names)) {
+      return urls.map((url: string, i: number) => ({ url, name: names[i] ?? url }))
+    }
+  } catch {
+    return [{ url: file_url, name: file_name }]
+  }
+  return []
+}
+
 export default function SubmitAssignment() {
   const params = useParams()
   const id = params.id as string
@@ -15,7 +29,7 @@ export default function SubmitAssignment() {
   const [existing, setExisting] = useState<Submission | null>(null)
   const [studentName, setStudentName] = useState('')
   const [text, setText] = useState('')
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -43,9 +57,13 @@ export default function SubmitAssignment() {
     load()
   }, [id, router])
 
+  function removeFile(index: number) {
+    setFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!text.trim() && !file) {
+    if (!text.trim() && files.length === 0 && !existing?.file_url) {
       setError('กรุณาพิมพ์คำตอบหรือแนบไฟล์')
       return
     }
@@ -55,34 +73,42 @@ export default function SubmitAssignment() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
-    let fileUrl: string | null = null
-    let fileName: string | null = null
+    let fileUrlValue: string | null = existing?.file_url ?? null
+    let fileNameValue: string | null = existing?.file_name ?? null
 
-    if (file) {
-      const ext = file.name.split('.').pop() ?? 'bin'
-      const safeName = `${Date.now()}.${ext}`
-      const filePath = `${user.id}/${id}/${safeName}`
-      const { error: uploadErr } = await supabase.storage
-        .from('submissions')
-        .upload(filePath, file, { upsert: true })
+    if (files.length > 0) {
+      const uploadedUrls: string[] = []
+      const uploadedNames: string[] = []
 
-      if (uploadErr) {
-        setError(`อัพโหลดไฟล์ไม่สำเร็จ: ${uploadErr.message}`)
-        setLoading(false)
-        return
+      for (const file of files) {
+        const ext = file.name.split('.').pop() ?? 'bin'
+        const safeName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+        const filePath = `${user.id}/${id}/${safeName}`
+        const { error: uploadErr } = await supabase.storage
+          .from('submissions')
+          .upload(filePath, file, { upsert: true })
+
+        if (uploadErr) {
+          setError(`อัพโหลด "${file.name}" ไม่สำเร็จ: ${uploadErr.message}`)
+          setLoading(false)
+          return
+        }
+
+        const { data: urlData } = supabase.storage.from('submissions').getPublicUrl(filePath)
+        uploadedUrls.push(urlData.publicUrl)
+        uploadedNames.push(file.name)
       }
 
-      const { data: urlData } = supabase.storage.from('submissions').getPublicUrl(filePath)
-      fileUrl = urlData.publicUrl
-      fileName = file.name
+      fileUrlValue = JSON.stringify(uploadedUrls)
+      fileNameValue = JSON.stringify(uploadedNames)
     }
 
     const payload = {
       assignment_id: id,
       student_id: user.id,
       text_content: text || null,
-      file_url: fileUrl,
-      file_name: fileName,
+      file_url: fileUrlValue,
+      file_name: fileNameValue,
       status: 'submitted' as const,
     }
 
@@ -118,6 +144,7 @@ export default function SubmitAssignment() {
   }
 
   const isGraded = existing?.status === 'graded'
+  const existingFiles = parseFiles(existing?.file_url ?? null, existing?.file_name ?? null)
 
   return (
     <div className="p-6 md:p-10 max-w-2xl">
@@ -179,9 +206,7 @@ export default function SubmitAssignment() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-ink-muted mb-2">
-            คำตอบ
-          </label>
+          <label className="block text-sm font-semibold text-ink-muted mb-2">คำตอบ</label>
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
@@ -192,30 +217,70 @@ export default function SubmitAssignment() {
           />
         </div>
 
+        {/* Existing files (read-only display) */}
+        {existingFiles.length > 0 && (
+          <div>
+            <label className="block text-sm font-semibold text-ink-muted mb-2">
+              ไฟล์ที่ส่งไปแล้ว
+            </label>
+            <ul className="space-y-1">
+              {existingFiles.map((f, i) => (
+                <li key={i}>
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-rust hover:text-rust-dark transition-colors"
+                  >
+                    <span>📎</span>
+                    <span className="underline underline-offset-2">{f.name}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {!isGraded && (
           <div>
             <label className="block text-sm font-semibold text-ink-muted mb-2">
-              แนบไฟล์ (ถ้ามี)
+              {existingFiles.length > 0 ? 'แนบไฟล์ใหม่ (จะแทนที่ไฟล์เดิม)' : 'แนบไฟล์ (ถ้ามี)'}
             </label>
-            <div className="border border-seam border-dashed bg-parchment-dark p-6 text-center">
+            <div className="border border-seam border-dashed bg-parchment-dark p-4">
               <input
                 type="file"
                 id="file-upload"
-                onChange={e => setFile(e.target.files?.[0] ?? null)}
-                className="hidden"
+                multiple
+                onChange={e => setFiles(Array.from(e.target.files ?? []))}
+                className="block w-full text-sm text-ink-muted
+                  file:mr-3 file:py-2 file:px-4
+                  file:border-0 file:text-sm
+                  file:bg-ink file:text-parchment
+                  hover:file:bg-rust file:cursor-pointer file:transition-colors"
               />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                {file ? (
-                  <p className="text-ink text-sm">{file.name}</p>
-                ) : existing?.file_name ? (
-                  <p className="text-ink text-sm">{existing.file_name} <span className="text-ink-muted">(ไฟล์ปัจจุบัน)</span></p>
-                ) : (
-                  <>
-                    <p className="text-ink-muted text-base mb-1">กดที่นี่เพื่อเลือกไฟล์</p>
-                    <p className="text-ink-muted text-xs">รูปภาพ, PDF, Word</p>
-                  </>
-                )}
-              </label>
+              {files.length > 0 && (
+                <ul className="mt-3 space-y-1">
+                  {files.map((f, i) => (
+                    <li key={i} className="flex items-center justify-between text-sm text-ink py-1 border-b border-seam/50 last:border-0">
+                      <span className="flex items-center gap-2">
+                        <span>📎</span>
+                        <span>{f.name}</span>
+                        <span className="text-xs text-ink-muted">({(f.size / 1024).toFixed(0)} KB)</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(i)}
+                        className="text-xs text-crimson hover:text-crimson/70 transition-colors ml-3 flex-shrink-0"
+                      >
+                        ลบ
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {files.length === 0 && (
+                <p className="text-xs text-ink-muted mt-2">เลือกได้หลายไฟล์พร้อมกัน</p>
+              )}
             </div>
           </div>
         )}

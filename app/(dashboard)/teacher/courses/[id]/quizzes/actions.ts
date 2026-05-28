@@ -3,7 +3,17 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notifyEnrolledStudents } from '@/lib/notifications'
+
+async function getDb() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/')
+  return createAdminClient()
+}
 
 function revalidate(courseId: string) {
   revalidatePath(`/teacher/courses/${courseId}`)
@@ -12,8 +22,8 @@ function revalidate(courseId: string) {
 export async function createQuiz(courseId: string, data: {
   title: string; description: string | null; topic_id: string | null
 }) {
-  const supabase = await createClient()
-  const { data: quiz, error } = await supabase
+  const db = await getDb()
+  const { data: quiz, error } = await db
     .from('quizzes').insert({ course_id: courseId, ...data, status: 'draft' }).select().single()
   if (error || !quiz) return
   revalidate(courseId)
@@ -21,14 +31,9 @@ export async function createQuiz(courseId: string, data: {
 }
 
 export async function updateQuizStatus(quizId: string, courseId: string, status: string) {
-  const supabase = await createClient()
-
-  // Fetch title before update (for notification message)
-  const { data: quiz } = await supabase.from('quizzes').select('title').eq('id', quizId).single()
-
-  await supabase.from('quizzes').update({ status: status as 'draft' | 'open' | 'closed' }).eq('id', quizId)
-
-  // Notify enrolled students when quiz opens
+  const db = await getDb()
+  const { data: quiz } = await db.from('quizzes').select('title').eq('id', quizId).single()
+  await db.from('quizzes').update({ status: status as 'draft' | 'open' | 'closed' }).eq('id', quizId)
   if (status === 'open' && quiz) {
     await notifyEnrolledStudents(
       courseId,
@@ -38,13 +43,12 @@ export async function updateQuizStatus(quizId: string, courseId: string, status:
       `/student/courses/${courseId}`
     )
   }
-
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 
 export async function deleteQuiz(quizId: string, courseId: string) {
-  const supabase = await createClient()
-  await supabase.from('quizzes').delete().eq('id', quizId)
+  const db = await getDb()
+  await db.from('quizzes').delete().eq('id', quizId)
   revalidate(courseId)
   redirect(`/teacher/courses/${courseId}`)
 }
@@ -52,46 +56,46 @@ export async function deleteQuiz(quizId: string, courseId: string) {
 export async function addQuestion(quizId: string, courseId: string, data: {
   question_text: string; points: number
 }) {
-  const supabase = await createClient()
-  await supabase.from('quiz_questions').insert({ quiz_id: quizId, ...data, question_order: 0 })
+  const db = await getDb()
+  await db.from('quiz_questions').insert({ quiz_id: quizId, ...data, question_order: 0 })
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 
 export async function updateQuestion(questionId: string, quizId: string, courseId: string, data: {
   question_text: string; points: number
 }) {
-  const supabase = await createClient()
-  await supabase.from('quiz_questions').update(data).eq('id', questionId)
+  const db = await getDb()
+  await db.from('quiz_questions').update(data).eq('id', questionId)
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 
 export async function deleteQuestion(questionId: string, quizId: string, courseId: string) {
-  const supabase = await createClient()
-  await supabase.from('quiz_questions').delete().eq('id', questionId)
+  const db = await getDb()
+  await db.from('quiz_questions').delete().eq('id', questionId)
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 
 export async function addChoice(questionId: string, quizId: string, courseId: string, data: {
   choice_text: string; is_correct: boolean
 }) {
-  const supabase = await createClient()
+  const db = await getDb()
   if (data.is_correct) {
-    await supabase.from('quiz_choices').update({ is_correct: false }).eq('question_id', questionId)
+    await db.from('quiz_choices').update({ is_correct: false }).eq('question_id', questionId)
   }
-  await supabase.from('quiz_choices').insert({ question_id: questionId, ...data, choice_order: 0 })
+  await db.from('quiz_choices').insert({ question_id: questionId, ...data, choice_order: 0 })
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 
 export async function setCorrectChoice(choiceId: string, questionId: string, quizId: string, courseId: string) {
-  const supabase = await createClient()
-  await supabase.from('quiz_choices').update({ is_correct: false }).eq('question_id', questionId)
-  await supabase.from('quiz_choices').update({ is_correct: true }).eq('id', choiceId)
+  const db = await getDb()
+  await db.from('quiz_choices').update({ is_correct: false }).eq('question_id', questionId)
+  await db.from('quiz_choices').update({ is_correct: true }).eq('id', choiceId)
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 
 export async function deleteChoice(choiceId: string, quizId: string, courseId: string) {
-  const supabase = await createClient()
-  await supabase.from('quiz_choices').delete().eq('id', choiceId)
+  const db = await getDb()
+  await db.from('quiz_choices').delete().eq('id', choiceId)
   revalidatePath(`/teacher/courses/${courseId}/quizzes/${quizId}`)
 }
 
@@ -146,17 +150,17 @@ export async function importFromGoogleForms(
 
   if (parsed.length === 0) return { error: 'ไม่พบคำถาม multiple choice ใน form' }
 
-  const supabase = await createClient()
+  const db = await getDb()
   let imported = 0
 
   for (const q of parsed) {
-    const { data: question } = await supabase
+    const { data: question } = await db
       .from('quiz_questions')
       .insert({ quiz_id: quizId, question_text: q.title, points: 1, question_order: 0 })
       .select().single()
 
     if (question) {
-      await supabase.from('quiz_choices').insert(
+      await db.from('quiz_choices').insert(
         q.choices.map((text, i) => ({
           question_id: question.id,
           choice_text: text,
