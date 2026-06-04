@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import GradePanel from '@/app/(dashboard)/_components/GradePanel'
 import EditAssignmentForm from '../_components/EditAssignmentForm'
+import MarkSubmittedButton from './_components/MarkSubmittedButton'
 
 export default async function CourseAssignmentDetail({
   params,
@@ -133,9 +134,17 @@ export default async function CourseAssignmentDetail({
                     </div>
                     <p className="text-ink text-sm">{profile?.full_name ?? '—'}</p>
                   </div>
-                  <p className="text-ink-muted text-xs">
-                    {profile?.grade ?? ''}{profile?.classroom ? ` · ${profile.classroom}` : ''}
-                  </p>
+                  <div className="flex items-center gap-4">
+                    <p className="text-ink-muted text-xs">
+                      {profile?.grade ?? ''}{profile?.classroom ? ` · ${profile.classroom}` : ''}
+                    </p>
+                    <MarkSubmittedButton
+                      studentId={e.student_id}
+                      studentName={profile?.full_name ?? '—'}
+                      assignmentId={aid}
+                      courseId={courseId}
+                    />
+                  </div>
                 </div>
               )
             })}

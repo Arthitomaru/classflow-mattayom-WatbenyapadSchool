@@ -59,6 +59,33 @@ export async function updateAssignment(
   return {}
 }
 
+export async function markAsSubmitted(
+  studentId: string,
+  assignmentId: string,
+  courseId: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'teacher' && profile?.role !== 'admin') return { error: 'ไม่มีสิทธิ์' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('submissions').upsert({
+    assignment_id: assignmentId,
+    student_id: studentId,
+    status: 'submitted',
+    text_content: null,
+    submitted_at: new Date().toISOString(),
+  }, { onConflict: 'assignment_id,student_id', ignoreDuplicates: false })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/teacher/courses/${courseId}/assignments/${assignmentId}`)
+  return {}
+}
+
 export async function deleteAssignment(assignmentId: string, courseId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
