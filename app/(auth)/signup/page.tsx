@@ -22,6 +22,16 @@ const gradeConfig: Record<Grade, { label: string; active: string; idle: string }
     active: 'bg-red-400/20 text-red-300 border-red-400/60',
     idle: 'bg-white/6 text-white/50 border-white/18 hover:border-red-400/40 hover:text-red-300',
   },
+  'ป.4': {
+    label: 'ป.4',
+    active: 'bg-blue-400/20 text-blue-300 border-blue-400/60',
+    idle: 'bg-white/6 text-white/50 border-white/18 hover:border-blue-400/40 hover:text-blue-300',
+  },
+  'ป.5': {
+    label: 'ป.5',
+    active: 'bg-purple-400/20 text-purple-300 border-purple-400/60',
+    idle: 'bg-white/6 text-white/50 border-white/18 hover:border-purple-400/40 hover:text-purple-300',
+  },
 }
 
 export default function SignupPage() {
@@ -100,10 +110,12 @@ export default function SignupPage() {
           <div className="w-12 h-px bg-yellow-400/60" />
           <div className="space-y-2">
             <p className="text-sm font-semibold text-white/50 text-xs tracking-widest uppercase">ระดับชั้น</p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2">
               <span className="text-pink-300 text-sm font-semibold px-2 py-1 bg-pink-400/15 border border-pink-400/30 rounded-sm">ม.1</span>
               <span className="text-green-300 text-sm font-semibold px-2 py-1 bg-green-400/15 border border-green-400/30 rounded-sm">ม.2</span>
               <span className="text-red-300 text-sm font-semibold px-2 py-1 bg-red-400/15 border border-red-400/30 rounded-sm">ม.3</span>
+              <span className="text-blue-300 text-sm font-semibold px-2 py-1 bg-blue-400/15 border border-blue-400/30 rounded-sm">ป.4</span>
+              <span className="text-purple-300 text-sm font-semibold px-2 py-1 bg-purple-400/15 border border-purple-400/30 rounded-sm">ป.5</span>
             </div>
           </div>
         </div>
@@ -134,7 +146,7 @@ export default function SignupPage() {
             {/* Grade selection */}
             <div>
               <label className="block text-xs tracking-widest uppercase text-white/50 mb-2">ระดับชั้น</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-5 gap-2">
                 {(Object.keys(gradeConfig) as Grade[]).map(g => (
                   <button
                     key={g}

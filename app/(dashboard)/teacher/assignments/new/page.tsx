@@ -65,8 +65,8 @@ export default function NewAssignment() {
           <label className="block text-sm font-semibold text-ink-muted mb-2">
             ระดับชั้น <span className="text-rust">*</span>
           </label>
-          <div className="grid grid-cols-3 gap-2">
-            {(['ม.1', 'ม.2', 'ม.3'] as Grade[]).map(g => (
+          <div className="grid grid-cols-5 gap-2">
+            {(['ม.1', 'ม.2', 'ม.3', 'ป.4', 'ป.5'] as Grade[]).map(g => (
               <button
                 key={g}
                 type="button"

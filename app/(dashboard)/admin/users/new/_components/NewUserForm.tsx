@@ -64,7 +64,7 @@ export default function NewUserForm() {
           <select name="grade"
             className="w-full bg-parchment-dark border border-seam px-4 py-3 text-base text-ink focus:outline-none focus:border-rust">
             <option value="">— เลือก —</option>
-            {(['ม.1', 'ม.2', 'ม.3'] as Grade[]).map(g => (
+            {(['ม.1', 'ม.2', 'ม.3', 'ป.4', 'ป.5'] as Grade[]).map(g => (
               <option key={g} value={g}>{g}</option>
             ))}
           </select>

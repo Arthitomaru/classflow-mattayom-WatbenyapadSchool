@@ -87,7 +87,7 @@ export default async function StudentAssignments() {
           >
             <div className="text-[32px] mb-3">⚠️</div>
             <p className="font-display font-semibold text-[16px] text-ink mb-1">ยังไม่ได้ตั้งระดับชั้น</p>
-            <p className="text-[13px] text-ink-muted">ติดต่อคุณครูเพื่อตั้งค่าระดับชั้น (ม.1 / ม.2 / ม.3)</p>
+            <p className="text-[13px] text-ink-muted">ติดต่อคุณครูเพื่อตั้งค่าระดับชั้น (ม.1 / ม.2 / ม.3 / ป.4 / ป.5)</p>
           </div>
         ) : assignmentList.length === 0 ? (
           <div

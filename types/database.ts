@@ -1,5 +1,5 @@
 export type Role = 'teacher' | 'student' | 'admin'
-export type Grade = 'ม.1' | 'ม.2' | 'ม.3'
+export type Grade = 'ม.1' | 'ม.2' | 'ม.3' | 'ป.4' | 'ป.5'
 export type SubmissionStatus = 'submitted' | 'graded'
 
 export interface Profile {
@@ -228,7 +228,7 @@ export type Database = {
           id: string
           role: 'teacher' | 'student' | 'admin'
           full_name: string
-          grade: 'ม.1' | 'ม.2' | 'ม.3' | null
+          grade: 'ม.1' | 'ม.2' | 'ม.3' | 'ป.4' | 'ป.5' | null
           avatar_url: string | null
           classroom: string | null
           phone: string | null
@@ -238,7 +238,7 @@ export type Database = {
           id: string
           role: 'teacher' | 'student' | 'admin'
           full_name: string
-          grade?: 'ม.1' | 'ม.2' | 'ม.3' | null
+          grade?: 'ม.1' | 'ม.2' | 'ม.3' | 'ป.4' | 'ป.5' | null
           avatar_url?: string | null
           classroom?: string | null
           phone?: string | null
@@ -248,7 +248,7 @@ export type Database = {
           id?: string
           role?: 'teacher' | 'student' | 'admin'
           full_name?: string
-          grade?: 'ม.1' | 'ม.2' | 'ม.3' | null
+          grade?: 'ม.1' | 'ม.2' | 'ม.3' | 'ป.4' | 'ป.5' | null
           avatar_url?: string | null
           classroom?: string | null
           phone?: string | null
@@ -262,7 +262,7 @@ export type Database = {
           title: string
           description: string | null
           due_date: string | null
-          grade: 'ม.1' | 'ม.2' | 'ม.3' | null
+          grade: 'ม.1' | 'ม.2' | 'ม.3' | 'ป.4' | 'ป.5' | null
           subject: string | null
           teacher_id: string
           course_id: string | null
@@ -273,7 +273,7 @@ export type Database = {
           title: string
           description?: string | null
           due_date?: string | null
-          grade?: 'ม.1' | 'ม.2' | 'ม.3' | null
+          grade?: 'ม.1' | 'ม.2' | 'ม.3' | 'ป.4' | 'ป.5' | null
           subject?: string | null
           teacher_id: string
           course_id?: string | null
@@ -284,7 +284,7 @@ export type Database = {
           title?: string
           description?: string | null
           due_date?: string | null
-          grade?: 'ม.1' | 'ม.2' | 'ม.3' | null
+          grade?: 'ม.1' | 'ม.2' | 'ม.3' | 'ป.4' | 'ป.5' | null
           subject?: string | null
           teacher_id?: string
           course_id?: string | null
