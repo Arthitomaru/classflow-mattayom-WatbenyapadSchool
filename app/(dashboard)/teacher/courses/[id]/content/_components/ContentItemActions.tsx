@@ -45,8 +45,10 @@ export default function ContentItemActions({ item, courseId }: { item: ContentIt
       const supabase = createClient()
       const ext = file.name.split('.').pop()
       const path = `${courseId}/${Date.now()}.${ext}`
+      const uploadOpts: { upsert: boolean; contentType?: string } = { upsert: true }
+      if (ext === 'html') uploadOpts.contentType = 'text/html'
       const { error: uploadErr } = await supabase.storage
-        .from('course-content').upload(path, file, { upsert: true })
+        .from('course-content').upload(path, file, uploadOpts)
       if (!uploadErr) {
         const { data: { publicUrl } } = supabase.storage.from('course-content').getPublicUrl(path)
         filePath = publicUrl

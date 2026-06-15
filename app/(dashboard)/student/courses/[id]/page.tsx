@@ -289,13 +289,18 @@ export default async function StudentCourseView({
                                         <p className="text-[11px] text-ink-muted mt-0.5 truncate">{item.description}</p>
                                       )}
                                     </div>
-                                    {item.type !== 'youtube' && (item.file_path || item.url) && (
-                                      <a href={item.file_path ?? item.url ?? '#'} target="_blank" rel="noopener noreferrer"
-                                        className="text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors flex-shrink-0"
-                                        style={{ background: typeColor.bg, color: typeColor.fg }}>
-                                        {item.type === 'file' ? 'ดาวน์โหลด' : 'เปิด'}
-                                      </a>
-                                    )}
+                                    {item.type !== 'youtube' && (item.file_path || item.url) && (() => {
+                                      const href = item.file_path ?? item.url ?? '#'
+                                      const isHtml = item.file_path?.toLowerCase().endsWith('.html')
+                                      const label = item.type === 'file' ? (isHtml ? 'เปิด' : 'ดาวน์โหลด') : 'เปิด'
+                                      return (
+                                        <a href={href} target="_blank" rel="noopener noreferrer"
+                                          className="text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors flex-shrink-0"
+                                          style={{ background: typeColor.bg, color: typeColor.fg }}>
+                                          {label}
+                                        </a>
+                                      )
+                                    })()}
                                   </div>
                                   {ytId && (
                                     <div className="mt-2 aspect-video w-full rounded-xl overflow-hidden">

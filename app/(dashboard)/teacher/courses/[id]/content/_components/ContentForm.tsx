@@ -44,9 +44,11 @@ export default function ContentForm({
       if (!file) { setError('เลือกไฟล์ก่อน'); setLoading(false); return }
       const ext = file.name.split('.').pop()
       const path = `${courseId}/${Date.now()}.${ext}`
+      const uploadOpts: { upsert: boolean; contentType?: string } = { upsert: true }
+      if (ext === 'html') uploadOpts.contentType = 'text/html'
       const { error: uploadErr } = await supabase.storage
         .from('course-content')
-        .upload(path, file, { upsert: true })
+        .upload(path, file, uploadOpts)
       if (uploadErr) { setError('อัพโหลดไม่สำเร็จ: ' + uploadErr.message); setLoading(false); return }
       const { data: { publicUrl } } = supabase.storage.from('course-content').getPublicUrl(path)
       filePath = publicUrl
