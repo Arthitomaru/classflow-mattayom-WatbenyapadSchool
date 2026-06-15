@@ -118,7 +118,7 @@ export default function ContentItemActions({ item, courseId }: { item: ContentIt
             )}
             <input
               type="file"
-              accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.html"
               onChange={e => setFile(e.target.files?.[0] ?? null)}
               className="w-full bg-parchment border border-seam px-3 py-2 text-xs text-ink file:mr-3 file:py-1 file:px-2 file:border-0 file:text-xs file:bg-ink file:text-parchment hover:file:bg-rust file:cursor-pointer"
             />

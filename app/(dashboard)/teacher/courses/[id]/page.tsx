@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils'
 import AddStudentForm from '@/app/(dashboard)/teacher/courses/_components/AddStudentForm'
 import AddTopicForm from '@/app/(dashboard)/teacher/courses/_components/AddTopicForm'
 import ContentItemActions from '@/app/(dashboard)/teacher/courses/[id]/content/_components/ContentItemActions'
+import EditTopicTitle from '@/app/(dashboard)/teacher/courses/_components/EditTopicTitle'
 import DeleteAssignmentButton from '@/app/(dashboard)/teacher/courses/[id]/assignments/_components/DeleteAssignmentButton'
 
 export default async function CourseDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -229,14 +230,16 @@ export default async function CourseDetail({ params }: { params: Promise<{ id: s
               return (
                 <div key={topic.id} className={ti < topics.length - 1 ? 'border-b border-seam' : ''}>
                   <div className="flex items-center justify-between px-5 py-3 bg-parchment-dark/50">
-                    <div className="flex items-center gap-3">
-                      <span className="font-display italic text-rust text-sm">{ti + 1}.</span>
-                      <h3 className="font-semibold text-ink text-sm">{topic.title}</h3>
-                      <span className="text-xs text-ink-muted">{items.length} รายการ</span>
-                    </div>
+                    <EditTopicTitle
+                      topicId={topic.id}
+                      courseId={id}
+                      initialTitle={topic.title}
+                      index={ti}
+                      itemCount={items.length}
+                    />
                     <Link
                       href={`/teacher/courses/${id}/content/new?topic_id=${topic.id}`}
-                      className="text-xs text-rust hover:text-rust-dark transition-colors"
+                      className="text-xs text-rust hover:text-rust-dark transition-colors ml-3"
                     >
                       + เพิ่ม
                     </Link>

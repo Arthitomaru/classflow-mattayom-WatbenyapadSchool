@@ -155,11 +155,11 @@ export default function ContentForm({
       {/* Content input */}
       {type === 'file' ? (
         <div key={`file-${fileKey}`}>
-          <label className="block text-sm font-semibold text-ink-muted mb-2">ไฟล์ (PDF, Word, PPT, รูปภาพ)</label>
+          <label className="block text-sm font-semibold text-ink-muted mb-2">ไฟล์ (PDF, Word, PPT, รูปภาพ, HTML)</label>
           <input
             key={fileKey}
             type="file"
-            accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png"
+            accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.html"
             onChange={e => setFile(e.target.files?.[0] ?? null)}
             required
             className="w-full bg-parchment-dark border border-seam px-4 py-3 text-sm text-ink file:mr-4 file:py-1 file:px-3 file:border-0 file:text-sm file:bg-ink file:text-parchment hover:file:bg-rust file:cursor-pointer"

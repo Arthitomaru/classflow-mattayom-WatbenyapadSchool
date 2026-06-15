@@ -41,6 +41,15 @@ export async function addTopic(courseId: string, title: string): Promise<{ error
   return {}
 }
 
+export async function updateTopic(topicId: string, courseId: string, title: string): Promise<{ error?: string }> {
+  await assertTeacherOrAdmin()
+  const admin = createAdminClient()
+  const { error } = await admin.from('topics').update({ title }).eq('id', topicId)
+  if (error) return { error: error.message }
+  revalidatePath(`/teacher/courses/${courseId}`)
+  return {}
+}
+
 export async function addEnrollment(
   courseId: string,
   studentName: string
